@@ -1,16 +1,15 @@
-import PIL
 import torch
-from PIL import Image
-import numpy as np
 from torchvision import models, transforms
+from .base_model import BaseModel
 
 N_CLASS = 308
-MODEL_NAME = "resnet50-new_weights.pth"
 
 
-class FoodClassifier(object):
-
-    def _init_model(self) -> torch.nn.Module:
+class FoodClassifier(BaseModel):
+    """
+    Модель определяет, что на фото еда/не еда
+    """
+    def _init_model(self, model_fname) -> torch.nn.Module:
         model = models.resnet50(pretrained=False)
 
         for param in model.parameters():
@@ -18,7 +17,8 @@ class FoodClassifier(object):
 
         num_ftrs = model.fc.in_features
         model.fc = torch.nn.Linear(num_ftrs, N_CLASS)
-        model.load_state_dict(torch.load(MODEL_NAME, map_location='cpu'))
+        model.load_state_dict(torch.load(model_fname, map_location='cpu'))
+        model.eval()
         return model
 
     def _get_transform_pipeline(self):
@@ -32,14 +32,15 @@ class FoodClassifier(object):
         ])
         return valid_transf
 
-    def __init__(self):
-        self.model = self._init_model()
-        self.img_transform = self._get_transform_pipeline()
-    
-    def predict_class(self, image):
-        image = self.img_transform(image)
-        image.unsqueeze_(0)
-        outputs = self.model(image)
+    def __init__(self, model_fname):
+        super().__init__(model_fname)
+
+    def predict(self, images):
+        images = [
+            self.img_transform(image).unsqueeze_(0) for image in images
+        ]
+        images = torch.cat(images, 0)
+        outputs = self.model(images)
         _, preds = torch.max(outputs.data, 1)
         preds_class = preds.numpy()
         return preds_class
