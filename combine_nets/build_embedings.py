@@ -59,6 +59,7 @@ class ImagePredictor:
 
         input_ = image.convert('RGB')
         input_ = self.test_transforms(input_)
+        
         embeds = self.model(input_[None, ...])
         _, pred = torch.max(self.class_predictor(embeds).data, 1)
 
