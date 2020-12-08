@@ -17,6 +17,7 @@ class FoodDetector(BaseModel):
     Определяет тип еды на фото
     TODO: сетка для извлечения эмбедов
     """
+
     def _init_model(self, model_fname) -> torch.nn.Module:
         model = models.resnet18(pretrained=False)
 

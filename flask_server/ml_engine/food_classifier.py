@@ -9,6 +9,7 @@ class FoodClassifier(BaseModel):
     """
     Модель определяет, что на фото еда/не еда
     """
+
     def _init_model(self, model_fname) -> torch.nn.Module:
         model = models.resnet50(pretrained=False)
 
