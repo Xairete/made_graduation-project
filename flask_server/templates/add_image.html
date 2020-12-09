@@ -10,19 +10,35 @@ crossorigin="anonymous"
 <body>
     <header>{% include 'navbar.html' %}</header>
     <form method="POST" enctype=multipart/form-data style="padding:10px">
-        <input class="form-control" type="text" placeholder="instagram name" name="instagram_url">
-        <div class="form-group">
-        <label for="exampleFormControlSelect1">Example select</label>
-        <select class="form-control" id="NumInstagramParse", name="num_images">
-            {% for n in range(1,61) %}
-                <option>{{ n }}</option>
-            {% endfor %}
-        </select>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Upload</span>
+            </div>
+            <div class="custom-file">
+                <input
+                type="file"
+                name="file"
+                class="custom-file-input"
+                id="inputGroupFile01"
+                />
+                <label class="custom-file-label" for="inputGroupFile01">
+                    Choose file
+                </label>
+            </div>
         </div>
-        </br>
-        <button name="btn" type="submit" class="btn btn-primary" value="submit">
-            parse
-        </button>
+        <div class="form-group">
+            <label for="exampleFormControlTextarea1">Комментарий</label>
+            <textarea
+            class="form-control"
+            id="exampleFormControlTextarea1"
+            name="comment"
+            ></textarea>
+        </div>
+        <div>
+            <button name="submit" type="submit" class="btn btn-primary" value="submit">
+                Добавить фото
+            </button>
+        </div>
     </form>
 </body>
 <script

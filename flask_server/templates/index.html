@@ -9,50 +9,36 @@ crossorigin="anonymous"
 
 <body>
     <header>{% include 'navbar.html' %}</header>
-    <form method="POST" enctype=multipart/form-data style="padding:10px">
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Upload</span>
-            </div>
-            <div class="custom-file">
-                <input
-                type="file"
-                name="file"
-                class="custom-file-input"
-                id="inputGroupFile01"
-                />
-                <label class="custom-file-label" for="inputGroupFile01">
-                    Choose file
-                </label>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="exampleFormControlTextarea1">Комментарий</label>
-            <textarea
-            class="form-control"
-            id="exampleFormControlTextarea1"
-            name="comment"
-            ></textarea>
-        </div>
-        <button name="btn" type="submit" class="btn btn-primary" value="submit">
-            Submit
-        </button>
-    </form>
-    <br/>
+    <div>
+        <form action="/preprocess" method="get", style="padding:10px">
+            <button type="submit" class="btn btn-primary">
+                Препроцессинг
+            </button>
+        </form>
+    </div>
+
+    <div>
+        <form action="/recommend" method="get", style="padding:10px">
+            <button type="submit" class="btn btn-primary">
+                Рекомендация
+            </button>
+        </form>
+    </div>
+
     <br/>
     <table id="container">
-        {% for key, image in images.items() %}
+        {% for key, data in im_dict.items() %}
         <tr>
             <td>
                 <figure class="figure border border-dark rounded pxy-md-5">
-                    <img src="data:image;base64,{{ image[0] }}" class="figure-img img-fluid rounded"
+                    <img src="data:image;base64,{{ data[0] }}" class="figure-img img-fluid rounded"
                     alt="A generic square placeholder image with rounded corners in a figure.">
-                    <figcaption class="figure-caption">{{ image[1] }}</figcaption>
+                    <figcaption class="figure-caption">{{ data[1] }}</figcaption>
                 </figure>
             </td>
             <td>
-                <form action="/remove/" method="post">
-                    <button name="remove_image" type="submit" class="btn btn-primary" value={{ key }}>Forward</button>
+                <form action="/remove" method="post">
+                    <button name="remove_image" type="submit" class="btn btn-primary" value={{ key }}>drop</button>
                 </form>
             </td>
         </tr>
