@@ -9,37 +9,15 @@ crossorigin="anonymous"
 
 <body>
     <header>{% include 'navbar.html' %}</header>
-    <div>
-        <form action="/preprocess" method="get", style="padding:10px">
-            <button type="submit" class="btn btn-primary">
-                Препроцессинг
-            </button>
-        </form>
-    </div>
-
-    <div>
-        <form action="/recommend" method="get", style="padding:10px">
-            <button type="submit" class="btn btn-primary">
-                Рекомендация
-            </button>
-        </form>
-    </div>
-
     <br/>
     <table id="container">
-        {% for key, data in im_dict.items() %}
+        {% for image in b64_images %}
         <tr>
             <td>
                 <figure class="figure border border-dark rounded pxy-md-5">
-                    <img src="data:image;base64,{{ data[0] }}" class="figure-img img-fluid rounded"
+                    <img src="data:image;base64,{{ image }}" class="figure-img img-fluid rounded"
                     alt="A generic square placeholder image with rounded corners in a figure.">
-                    <figcaption class="figure-caption">{{ data[1] }}</figcaption>
                 </figure>
-            </td>
-            <td>
-                <form action="/remove" method="get">
-                    <button name="remove_image" type="submit" class="btn btn-primary" value={{ key }}>drop</button>
-                </form>
             </td>
         </tr>
         {% endfor %}

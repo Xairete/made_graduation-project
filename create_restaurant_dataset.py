@@ -2,14 +2,13 @@
 
 import argparse
 import json
-import sys
-from pathlib import Path
+import logging
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import requests
 from furl import furl
 from tqdm import tqdm
-import logging
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -61,7 +60,7 @@ def update_restaurant(restaurant, restaurant_name, root_dir, pool: ThreadPoolExe
                 return r.content, image_path
             except Exception as ex:
                 logging.error(
-                    "while parsing url={url} path={path} got: {ex}".format(url=url, path=image_path, ex=ex))
+                    "while parsing url=\"{url}\" path=\"{path}\" got: {ex}".format(url=url, path=image_path, ex=ex))
             return None
 
         update_list = []
@@ -74,15 +73,17 @@ def update_restaurant(restaurant, restaurant_name, root_dir, pool: ThreadPoolExe
                 image_path = category_path.joinpath(dish_name + '.jpg')
                 update_list.append((url, image_path))
                 if len(update_list) == NUM_WORKERS:
-                    result = pool.map(update_url, update_list)
-                    for content, image_path in result:
-                        open(image_path, 'wb').write(content)
+                    get_images(pool, update_url, update_list)
         if len(update_list):
-            result = pool.map(update_url, update_list)
-            for result in result:
-                if result:
-                    content, image_path = result
-                    open(image_path, 'wb').write(content)
+            get_images(pool, update_url, update_list)
+
+
+def get_images(pool, update_url, update_list):
+    result = pool.map(update_url, update_list)
+    for result in result:
+        if result:
+            content, image_path = result
+            open(image_path, 'wb').write(content)
 
 
 if __name__ == '__main__':

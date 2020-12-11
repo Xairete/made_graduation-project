@@ -18,6 +18,7 @@ class BaseModel(object):
         pass
 
     def __init__(self, model_fname):
+        self.device = torch.device('cpu')
         self.model = self._init_model(model_fname)
         self.img_transform = self._get_transform_pipeline()
 

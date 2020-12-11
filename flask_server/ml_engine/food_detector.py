@@ -1,11 +1,13 @@
-import PIL
+import sys
+from typing import List
+
 import torch
-from PIL import Image
-import numpy as np
-from torch import mode
+from helpers.helpers import ImageMeta
 from torchvision import models, transforms
-from torch.utils.data import DataLoader
+
 from .base_model import BaseModel
+
+sys.path.append("..")
 
 N_CLASS = 2
 IMG_DIMENTIONS = 224
@@ -30,7 +32,8 @@ class FoodDetector(BaseModel):
             torch.nn.Dropout(),
             torch.nn.Linear(512, N_CLASS)
         )
-        model.load_state_dict(torch.load(model_fname, map_location='cpu'))
+        model.load_state_dict(torch.load(
+            model_fname, map_location=self.device))
         model.eval()
         return model
 
@@ -48,11 +51,20 @@ class FoodDetector(BaseModel):
         super().__init__(model_fname)
 
     def predict(self, images):
-        images = [
-            self.img_transform(image).unsqueeze_(0) for image in images
-        ]
-        images = torch.cat(images, 0)
-        outputs = self.model(images)
-        _, preds = torch.max(outputs.data, 1)
-        preds_class = preds.numpy()
+        with torch.no_grad():
+            images = [
+                self.img_transform(image).unsqueeze_(0) for image in images
+            ]
+            images = torch.cat(images, 0)
+            outputs = self.model(images)
+            _, preds = torch.max(outputs.data, 1)
+            preds_class = preds.numpy()
         return preds_class
+
+
+def select_food(meta: List[ImageMeta], labels):
+    result = []
+    for i in range(len(labels)):
+        if labels[i] == FOOD_LABEL:
+            result.append(meta[i])
+    return result

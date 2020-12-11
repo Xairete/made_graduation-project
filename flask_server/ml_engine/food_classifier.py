@@ -1,9 +1,18 @@
 import torch
+from torch import nn
+from torch._C import device
 from torchvision import models, transforms
+
 from .base_model import BaseModel
 
 N_CLASS = 308
 
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        return x
 
 class FoodClassifier(BaseModel):
     """
@@ -18,7 +27,9 @@ class FoodClassifier(BaseModel):
 
         num_ftrs = model.fc.in_features
         model.fc = torch.nn.Linear(num_ftrs, N_CLASS)
-        model.load_state_dict(torch.load(model_fname, map_location='cpu'))
+        model.load_state_dict(torch.load(
+            model_fname, map_location=self.device))
+        model.fc = Identity()
         model.eval()
         return model
 
@@ -42,6 +53,4 @@ class FoodClassifier(BaseModel):
         ]
         images = torch.cat(images, 0)
         outputs = self.model(images)
-        _, preds = torch.max(outputs.data, 1)
-        preds_class = preds.numpy()
-        return preds_class
+        return outputs
