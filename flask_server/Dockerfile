@@ -5,8 +5,7 @@ ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 RUN apt update -y
 RUN apt install -y curl
-# RUN apk add --no-cache gcc musl-dev linux-headers \
-# python3-dev jpeg-dev zlib-dev
+
 RUN curl -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
      chmod +x ~/miniconda.sh && \
      ~/miniconda.sh -b -p /opt/conda && \

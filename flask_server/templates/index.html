@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<link
+rel="stylesheet"
+href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+crossorigin="anonymous"
+/>
+
+<body>
+    <header>{% include 'navbar.html' %}</header>
+    <div>
+        <form action="/preprocess" method="get", style="padding:10px">
+            <button type="submit" class="btn btn-primary">
+                Препроцессинг
+            </button>
+        </form>
+    </div>
+
+    <div>
+        <form action="/recommend" method="get", style="padding:10px">
+            <button type="submit" class="btn btn-primary">
+                Рекомендация
+            </button>
+        </form>
+    </div>
+
+    <br/>
+    <table id="container">
+        {% for key, data in im_dict.items() %}
+        <tr>
+            <td>
+                <figure class="figure border border-dark rounded pxy-md-5">
+                    <img src="data:image;base64,{{ data[0] }}" class="figure-img img-fluid rounded"
+                    alt="A generic square placeholder image with rounded corners in a figure.">
+                    <figcaption class="figure-caption">{{ data[1] }}</figcaption>
+                </figure>
+            </td>
+            <td>
+                <form action="/remove" method="get">
+                    <button name="remove_image" type="submit" class="btn btn-primary" value={{ key }}>drop</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+<script
+src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+crossorigin="anonymous"
+></script>
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+crossorigin="anonymous"
+></script>
+<script
+src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+crossorigin="anonymous"
+></script>
+</html>
