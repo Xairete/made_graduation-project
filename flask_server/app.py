@@ -14,7 +14,7 @@ from helpers.reco import get_recommend, get_b64_images
 from config import Config
 from helpers.helpers import FakeDb, ImageMeta
 from ml_engine.food_classifier import FoodClassifier
-from ml_engine.food_detector import FOOD_LABEL, FoodDetector, select_food
+from ml_engine.food_detector import FoodDetector, select_food
 from ml_engine.food_selector import FoodSelector
 
 app = Flask(__name__)
