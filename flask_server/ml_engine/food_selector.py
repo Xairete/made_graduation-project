@@ -16,7 +16,7 @@ sys.path.append("..")
 
 NUM_CLASSES = 2
 THRESHOLD_SCORE = 0.6
-
+IMAGE_SIZE = 256
 
 def postprocess_bbxes(pred: List[Any]):
     bbox_matrices = []
@@ -65,7 +65,7 @@ class FoodSelector(BaseModel):
     def _get_transform_pipeline(self):
         transformations = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Scale((256, 256)),
+            transforms.Scale((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         return transformations
 
@@ -88,12 +88,18 @@ class FoodSelector(BaseModel):
             images_tensor = [
                 self.img_transform(image).unsqueeze_(0) for image in images
             ]
+            
+            rescale_koeffs = [
+                [image.size[0]/IMAGE_SIZE, image.size[1]/IMAGE_SIZE] for image in images
+            ]
+            
             images_tensor = torch.cat(images_tensor, 0)
             predictions = self.model(images_tensor)
 
             images_res = []
             for id_im, pred_im in enumerate(predictions):
-                bboxes = self.extract_bboxes(pred_im)
+                koeffs = rescale_koeffs[id_im]
+                bboxes = self.extract_bboxes(pred_im, koeffs)
                 for bbox in bboxes:
                     # TODO: надо рескейлить и резать нормально
                     crop_image_bytes = im_to_bytes(
@@ -106,7 +112,7 @@ class FoodSelector(BaseModel):
 
             return images_res
 
-    def extract_bboxes(self, pred_im):
+    def extract_bboxes(self, pred_im, koeffs):
         pred_bboxes = []
         for i in range(len(pred_im['boxes'])):
             x_min, y_min, x_max, y_max = map(
@@ -114,5 +120,8 @@ class FoodSelector(BaseModel):
             label = int(pred_im['labels'][i].cpu())
             score = float(pred_im['scores'][i].cpu())
             if score > THRESHOLD_SCORE:
-                pred_bboxes.append([x_min, y_min, x_max, y_max])
+                pred_bboxes.append([int(x_min*koeffs[0]), 
+                                    int(y_min*koeffs[1]),
+                                    int(x_max*koeffs[0]),
+                                    int(y_max*koeffs[1])])
         return postprocess_bbxes(pred_bboxes)
