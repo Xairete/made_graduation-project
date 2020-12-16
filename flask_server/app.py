@@ -9,6 +9,7 @@ from flask.views import View
 from igramscraper.exception import InstagramNotFoundException
 from igramscraper.instagram import Instagram
 from PIL import Image
+from sqlalchemy import create_engine
 
 from config import Config
 from helpers.helpers import PostStorage, ImageMeta, resize_im_bytes
@@ -28,7 +29,12 @@ class AppContext(object):
 
 CONTEXT = AppContext()
 POST_STORAGE = PostStorage()
-RECO_DF = pd.read_parquet("df/merget_df.parquet.gzip")
+ENGINE=create_engine('sqlite:///df/meta.db')
+RECO_DF = pd.read_sql_table(
+    'reco',
+    con=ENGINE,
+    index_col=['index'],
+)
 
 
 class AddImages(View):
@@ -98,7 +104,7 @@ class RecoView(View):
         reco_dict = {}
         for res_data in reco_rests:
             rest_dishes = []
-            for dish_meta in res_data.rec_dishes:
+            for dish_meta in res_data.rec_dishes[:5]: #TODO: сделать по нормальному
                 rest_dishes.append(
                     {"url": dish_meta.dish_url, "name": dish_meta.dish_name, "score": dish_meta.score})
             reco_dict[res_data.rest_name] = {

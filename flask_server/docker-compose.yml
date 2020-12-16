@@ -6,19 +6,21 @@ services:
       - "5000:5000"
     env_file: 
       - .env
-  db:
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: user
-      POSTGRES_DB: restaurant
-    image: postgres:latest
-    networks:
-      - default
-    ports:
-      - 5405:5432
-    restart: always
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+    depends_on:
+      - redis
+  # db:
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: user
+  #     POSTGRES_DB: restaurant
+  #   image: postgres:latest
+  #   networks:
+  #     - default
+  #   ports:
+  #     - 5405:5432
+  #   restart: always
+  #   volumes:
+  #     - ./postgres-data:/var/lib/postgresql/data
   redis:
     image: "redis:alpine"
     ports:

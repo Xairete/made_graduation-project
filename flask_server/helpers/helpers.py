@@ -41,4 +41,4 @@ class PostStorage(object):
         self.images_meta.pop(id)
 
     def clean(self):
-        self.images_meta = {}
+        self.images_meta.clear()

@@ -31,7 +31,7 @@ def calc_restaraunt_score(rest_emb, insta_embed, mean_window=15, num_dish=3) -> 
 
     matches = []
 
-    rest_embed_values = rest_emb.values
+    rest_embed_values=np.array([np.frombuffer(row, dtype=np.float32) for row in rest_emb.values])
     rest_embed_index = rest_emb.index
     for i, insta_data in enumerate(insta_embed):
         insta_emb = insta_data
@@ -60,7 +60,7 @@ def get_recommend(df, insta_embeddings) -> List[RestMeta]:
     rest_groups = df.groupby('restaurant_name')
     final_result = []
     for name, rest_group in rest_groups:
-        emb = rest_group.iloc[:, :2048]
+        emb = rest_group['embed']
         mean_dist, matches = calc_restaraunt_score(emb, insta_embeddings)
 
         loc_index = [match.dish_index for match in matches]
