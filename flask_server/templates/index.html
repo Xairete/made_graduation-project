@@ -40,7 +40,7 @@ crossorigin="anonymous"
                     <img class="card-img-top" src="data:image;base64,{{ data[0] }}" alt="Card image cap">
                     <div class="card-body">
                         <form action="/remove" method="get">
-                            <a class="btn btn-primary">удалить</a>
+                            <button name="remove_image" class="btn btn-primary" value={{ key }}>>удалить</button>
                         </form>
                         <p class="card-text scroll-box">{{ data[1] }}</p>
                     </div>
