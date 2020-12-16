@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from io import BytesIO
 from redis_collections import Dict
-
+from redis import StrictRedis
 from PIL import Image
+import os
 
 
 @dataclass
@@ -29,7 +30,12 @@ def im_to_bytes(image):
 class PostStorage(object):
     def __init__(self, key='4ee69ce4970b4580bc80acac2572f16e') -> None:
         super().__init__()
-        self.images_meta = Dict(key='4ee69ce4970b4580bc80acac2572f16e')
+        host=os.environ.get("REDIS")
+        if host is None:
+            host="localhost"
+        redis = StrictRedis(host=host)
+        self.images_meta = Dict(
+            key='4ee69ce4970b4580bc80acac2572f16e', redis=redis)
         self.id = 0
         self.key = key
 

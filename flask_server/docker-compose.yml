@@ -8,6 +8,9 @@ services:
       - .env
     depends_on:
       - redis
+    volumes:
+      - ./models:/home/app/models
+      - ./df:/home/app/df
   # db:
   #   environment:
   #     POSTGRES_USER: user
