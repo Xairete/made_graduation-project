@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 from flask import Flask, redirect, render_template, request, url_for
 from flask.views import View
-from igramscraper.exception import InstagramNotFoundException
+from igramscraper.exception import InstagramNotFoundException, InstagramAuthException
 from igramscraper.instagram import Instagram
 from PIL import Image
 from sqlalchemy import create_engine
@@ -34,6 +34,11 @@ RECO_DF = pd.read_sql_table(
     'reco',
     con=ENGINE,
     index_col=['index'],
+)
+REST_URL_DF = pd.read_sql_table(
+    'rest_url',
+    con=ENGINE,
+    index_col=['restaurant_name']
 )
 
 
@@ -64,6 +69,12 @@ class PreprocessImages(View):
         if len(images):
             is_food_labels = CONTEXT.food_detector.predict(images)
             food_images_meta = select_food(images_meta, is_food_labels)
+            if not len(food_images_meta):
+                """
+                Нет еды, удаляем
+                """
+                POST_STORAGE.clean()
+                return redirect(url_for('index'))
             crop_images_meta = CONTEXT.food_selector.predict(food_images_meta)
             POST_STORAGE.clean()
             for im_meta in crop_images_meta:
@@ -95,6 +106,12 @@ class RecoView(View):
 
     def dispatch_request(self):
         meta_list = list(POST_STORAGE.images_meta.values())
+        if len(meta_list):
+            return self.recomendation_impl(meta_list)
+        else:
+            return redirect(url_for('index'))
+
+    def recomendation_impl(self, meta_list):
         image_list = []
         for meta in meta_list:
             img_pic = Image.open(BytesIO(meta.im_bytes))
@@ -102,14 +119,15 @@ class RecoView(View):
         image_embeddings = CONTEXT.food_clf.predict(image_list)
         reco_rests = get_recommend(RECO_DF, image_embeddings)
         reco_dict = {}
+        restraunt_url = REST_URL_DF.to_dict()['logo_url']
         for res_data in reco_rests:
             rest_dishes = []
             for dish_meta in res_data.rec_dishes[:5]: #TODO: сделать по нормальному
                 rest_dishes.append(
                     {"url": dish_meta.dish_url, "name": dish_meta.dish_name, "score": dish_meta.score})
+            rest_url=restraunt_url.get(res_data.rest_name,"")
             reco_dict[res_data.rest_name] = {
-                "dishes": rest_dishes, "score": res_data.score}
-        # return redirect(url_for('index'))
+                "dishes": rest_dishes, "score": res_data.score, "rest_url":rest_url}
         return render_template('reco.html', reco_dict=reco_dict)
 
 
@@ -136,7 +154,7 @@ class InstagramParserView(View):
             """
             image_b64 = base64.b64encode(
                 resize_im_bytes(image_bytes)).decode("ascii")
-            DB.add(ImageMeta(image_bytes, image_b64, media.caption))
+            POST_STORAGE.add(ImageMeta(image_bytes, image_b64, media.caption))
 
     def dispatch_request(self):
         if request.method == "POST":
@@ -150,6 +168,8 @@ class InstagramParserView(View):
             except InstagramNotFoundException:
                 pass
                 # TODO: add logging
+            except InstagramAuthException:
+                pass
             return redirect(url_for('index'))
 
         return render_template('instagram_parse.html')
