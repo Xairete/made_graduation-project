@@ -11,15 +11,27 @@ crossorigin="anonymous"
     <header>{% include 'navbar.html' %}</header>
     <br/>
     <table id="container">
-        {% for image in b64_images %}
-        <tr>
-            <td>
-                <figure class="figure border border-dark rounded pxy-md-5">
-                    <img src="data:image;base64,{{ image }}" class="figure-img img-fluid rounded"
-                    alt="A generic square placeholder image with rounded corners in a figure.">
-                </figure>
-            </td>
-        </tr>
+        {% for rest_name in reco_dict %}
+            <tr>
+            <table>
+            <tr>
+            {{ rest_name }} score: {{ reco_dict[rest_name]['score'] }}
+            <br/>
+            <table>
+                {% for dish_meta in reco_dict[rest_name]['dishes'] %}
+                <tr>
+                    <figure class="figure border border-dark rounded pxy-md-5">
+                        <img src="{{ dish_meta['url'] }}"
+                        alt="A generic square placeholder image with rounded corners in a figure.">
+                        <figcaption class="figure-caption">{{ dish_meta['name'] }} score: {{ dish_meta['score'] }}</figcaption>
+                    </figure>
+                </tr>
+                {% endfor %}
+                <br/>
+            </table>
+            </tr>
+            </table>
+            </tr>
         {% endfor %}
     </table>
 </body>

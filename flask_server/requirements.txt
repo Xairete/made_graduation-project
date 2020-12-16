@@ -1,1 +1,4 @@
 Flask==1.1.2
+murmurhash3==2.3.5
+Jinja2==2.11.2
+redis-collections==0.8.1

@@ -1,18 +1,18 @@
 import base64
 from io import BytesIO
 from typing import List
-import pandas as pd
 
+import pandas as pd
 import requests
 from flask import Flask, redirect, render_template, request, url_for
 from flask.views import View
 from igramscraper.exception import InstagramNotFoundException
 from igramscraper.instagram import Instagram
 from PIL import Image
-from helpers.reco import get_recommend, get_b64_images
 
 from config import Config
-from helpers.helpers import FakeDb, ImageMeta
+from helpers.helpers import PostStorage, ImageMeta, resize_im_bytes
+from ml_engine.reco import get_b64_images, get_recommend
 from ml_engine.food_classifier import FoodClassifier
 from ml_engine.food_detector import FoodDetector, select_food
 from ml_engine.food_selector import FoodSelector
@@ -27,9 +27,8 @@ class AppContext(object):
 
 
 CONTEXT = AppContext()
-DB = FakeDb()
-RECO_DF = pd.read_parquet("df_all_embs.parquet.gzip")
-RECO_DF['rest_name']=RECO_DF['image_path'].map(lambda x :x.split('/')[2])
+POST_STORAGE = PostStorage()
+RECO_DF = pd.read_parquet("df/merget_df.parquet.gzip")
 
 
 class AddImages(View):
@@ -39,11 +38,11 @@ class AddImages(View):
         if request.method == "POST":
             image = request.files['file']
             image_bytes = image.stream.read()
-            image_bytes = InstagramParserView.resize(image_bytes)
             if len(image_bytes):
                 caption = request.form['caption']
-                image_b64 = base64.b64encode(image_bytes).decode("ascii")
-                DB.add(ImageMeta(image_bytes, image_b64, caption))
+                image_b64 = base64.b64encode(
+                    resize_im_bytes(image_bytes)).decode("ascii")
+                POST_STORAGE.add(ImageMeta(image_bytes, image_b64, caption))
             return redirect(url_for('index'))
 
         if request.method == "GET":
@@ -54,15 +53,15 @@ class PreprocessImages(View):
     methods = ['GET']
 
     def dispatch_request(self):
-        images_meta = list(DB.images_meta.values())
+        images_meta = list(POST_STORAGE.images_meta.values())
         images = [Image.open(BytesIO(im.im_bytes)) for im in images_meta]
         if len(images):
             is_food_labels = CONTEXT.food_detector.predict(images)
             food_images_meta = select_food(images_meta, is_food_labels)
             crop_images_meta = CONTEXT.food_selector.predict(food_images_meta)
-            DB.clean()
+            POST_STORAGE.clean()
             for im_meta in crop_images_meta:
-                DB.add(im_meta)
+                POST_STORAGE.add(im_meta)
         return redirect(url_for('index'))
 
 
@@ -71,7 +70,7 @@ class IndexView(View):
 
     def dispatch_request(self):
         im_dict = {key: (value.im_b64, value.caption)
-                   for key, value in DB.images_meta.items()}
+                   for key, value in POST_STORAGE.images_meta.items()}
         return render_template('index.html', im_dict=im_dict)
 
 
@@ -81,7 +80,7 @@ class RemoveImage(View):
     def dispatch_request(self):
         rem_key = request.values.get("remove_image")
         rem_key = int(rem_key)
-        DB.remove(rem_key)
+        POST_STORAGE.remove(rem_key)
         return redirect(url_for('index'))
 
 
@@ -89,28 +88,27 @@ class RecoView(View):
     methods = ['GET']
 
     def dispatch_request(self):
-        meta_list = list(DB.images_meta.values())
+        meta_list = list(POST_STORAGE.images_meta.values())
         image_list = []
         for meta in meta_list:
             img_pic = Image.open(BytesIO(meta.im_bytes))
             image_list.append(img_pic)
         image_embeddings = CONTEXT.food_clf.predict(image_list)
-        result = get_recommend(RECO_DF, image_embeddings)
-        b64_images = get_b64_images(result)
+        reco_rests = get_recommend(RECO_DF, image_embeddings)
+        reco_dict = {}
+        for res_data in reco_rests:
+            rest_dishes = []
+            for dish_meta in res_data.rec_dishes:
+                rest_dishes.append(
+                    {"url": dish_meta.dish_url, "name": dish_meta.dish_name, "score": dish_meta.score})
+            reco_dict[res_data.rest_name] = {
+                "dishes": rest_dishes, "score": res_data.score}
         # return redirect(url_for('index'))
-        return render_template('reco.html', b64_images=b64_images)
+        return render_template('reco.html', reco_dict=reco_dict)
 
 
 class InstagramParserView(View):
     methods = ['GET', 'POST']
-
-    @staticmethod
-    def resize(image_bytes):
-        im = Image.open(BytesIO(image_bytes))
-        im = im.resize((256, 256))  # TODO : переделать
-        img_byte_arr = BytesIO()
-        im.save(img_byte_arr, format='PNG')
-        return img_byte_arr.getvalue()
 
     @staticmethod
     def parse_medias(medias):
@@ -126,8 +124,12 @@ class InstagramParserView(View):
             if image_url is None:
                 continue
             response = requests.get(image_url, stream=True)
-            image_bytes = InstagramParserView.resize(response.content)
-            image_b64 = base64.b64encode(image_bytes).decode("ascii")
+            image_bytes = response.content
+            """
+            рескейлим base64 для рисования
+            """
+            image_b64 = base64.b64encode(
+                resize_im_bytes(image_bytes)).decode("ascii")
             DB.add(ImageMeta(image_bytes, image_b64, media.caption))
 
     def dispatch_request(self):

@@ -5,7 +5,8 @@ from typing import Any, List
 
 import torch
 import torchvision
-from helpers.helpers import ImageMeta
+from helpers.helpers import im_to_bytes
+from helpers.helpers import ImageMeta, resize_im_bytes
 from PIL import Image
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -16,7 +17,8 @@ sys.path.append("..")
 
 NUM_CLASSES = 2
 THRESHOLD_SCORE = 0.6
-IMAGE_SIZE = 256
+IMAGE_SIZE = 640
+
 
 def postprocess_bbxes(pred: List[Any]):
     bbox_matrices = []
@@ -77,42 +79,36 @@ class FoodSelector(BaseModel):
         def get_image(image_b: bytes):
             return Image.open(BytesIO(image_b))
 
-        def im_to_bytes(image):
-            img_byte_arr = BytesIO()
-            image.save(img_byte_arr, format='PNG')
-            return img_byte_arr.getvalue()
-
         images = [get_image(image.im_bytes) for image in im_meta]
 
         with torch.no_grad():
             images_tensor = [
                 self.img_transform(image).unsqueeze_(0) for image in images
             ]
-            
-            rescale_koeffs = [
+
+            rescale_coeffs = [
                 [image.size[0]/IMAGE_SIZE, image.size[1]/IMAGE_SIZE] for image in images
             ]
-            
+
             images_tensor = torch.cat(images_tensor, 0)
             predictions = self.model(images_tensor)
 
             images_res = []
             for id_im, pred_im in enumerate(predictions):
-                koeffs = rescale_koeffs[id_im]
-                bboxes = self.extract_bboxes(pred_im, koeffs)
+                coeffs = rescale_coeffs[id_im]
+                bboxes = self.extract_bboxes(pred_im, coeffs)
                 for bbox in bboxes:
-                    # TODO: надо рескейлить и резать нормально
                     crop_image_bytes = im_to_bytes(
-                        images[id_im].crop(bbox).resize((256, 256))) 
-                    crop_image_b64 = base64.b64encode(
-                        crop_image_bytes).decode('ascii')
+                        images[id_im].crop(bbox))
+                    crop_image_b64 = base64.b64encode(resize_im_bytes(
+                        crop_image_bytes)).decode('ascii')
                     caption = im_meta[id_im].caption
                     images_res.append(
                         ImageMeta(crop_image_bytes, crop_image_b64, caption))
 
             return images_res
 
-    def extract_bboxes(self, pred_im, koeffs):
+    def extract_bboxes(self, pred_im, coeffs):
         pred_bboxes = []
         for i in range(len(pred_im['boxes'])):
             x_min, y_min, x_max, y_max = map(
@@ -120,8 +116,8 @@ class FoodSelector(BaseModel):
             label = int(pred_im['labels'][i].cpu())
             score = float(pred_im['scores'][i].cpu())
             if score > THRESHOLD_SCORE:
-                pred_bboxes.append([int(x_min*koeffs[0]), 
-                                    int(y_min*koeffs[1]),
-                                    int(x_max*koeffs[0]),
-                                    int(y_max*koeffs[1])])
+                pred_bboxes.append([int(x_min*coeffs[0]),
+                                    int(y_min*coeffs[1]),
+                                    int(x_max*coeffs[0]),
+                                    int(y_max*coeffs[1])])
         return postprocess_bbxes(pred_bboxes)
