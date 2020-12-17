@@ -24,4 +24,5 @@ COPY ml_engine /home/app/ml_engine
 COPY templates /home/app/templates
 COPY helpers /home/app/helpers
 COPY config.py /home/app/config.py
+COPY views /home/app/views
 CMD ["flask", "run"]
