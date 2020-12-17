@@ -54,4 +54,5 @@ class PostStorage(object):
 
     def clean(self):
         self.images_meta.clear()
+        self.id = 0
         self.redis.set("id", 0)

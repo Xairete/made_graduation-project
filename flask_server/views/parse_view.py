@@ -18,6 +18,7 @@ MIN_SCORE = 4.5
 template_dir = os.path.abspath('../temlates')
 
 
+
 class InstagramParserView(View):
     methods = ['GET', 'POST']
 
@@ -45,8 +46,8 @@ class InstagramParserView(View):
             account_name = request.form['instagram_url']
             num_parse = int(request.form['num_images'])
             try:
-                instagram = Instagram()
-                medias = instagram.get_medias(account_name, num_parse)
+                INSTAGRAM = Instagram()
+                medias = INSTAGRAM.get_medias(account_name, num_parse)
                 self.parse_medias(medias)
             except InstagramNotFoundException:
                 pass

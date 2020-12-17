@@ -1,5 +1,6 @@
 import base64
 from io import BytesIO
+from ml_engine.nlp_module import filter_positive_comments
 
 from flask import Flask, redirect, render_template, request, url_for
 from flask.views import View
@@ -37,8 +38,9 @@ class PreprocessImages(View):
 
     def dispatch_request(self):
         images_meta = list(POST_STORAGE.images_meta.values())
-        images = [Image.open(BytesIO(im.im_bytes)) for im in images_meta]
-        if len(images):
+        images_meta = filter_positive_comments(images_meta)
+        if len(images_meta):
+            images = [Image.open(BytesIO(im.im_bytes)) for im in images_meta]
             is_food_labels = CONTEXT.food_detector.predict(images)
             food_images_meta = select_food(images_meta, is_food_labels)
             if not len(food_images_meta):
@@ -72,6 +74,13 @@ class RemoveImage(View):
         POST_STORAGE.remove(rem_key)
         return redirect(url_for('index'))
 
+class Clean(View):
+    methods = ['GET']
+
+    def dispatch_request(self):
+        POST_STORAGE.clean()
+        return redirect(url_for('index'))
+
 
 app.add_url_rule('/remove', view_func=RemoveImage.as_view('remove_image'))
 app.add_url_rule('/recommend', view_func=RecoView.as_view('recommend'))
@@ -81,5 +90,6 @@ app.add_url_rule(
     '/inst_parse', view_func=InstagramParserView.as_view('inst_parse'))
 app.add_url_rule(
     '/preprocess', view_func=PreprocessImages.as_view('preprocess'))
-
+app.add_url_rule(
+    '/clean', view_func=Clean.as_view('clean'))
 app.run(threaded=False)
