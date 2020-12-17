@@ -10,20 +10,20 @@ crossorigin="anonymous"
 <body>
     <header>{% include 'navbar.html' %}</header>
     <form method="POST" enctype=multipart/form-data style="padding:10px">
-        <input class="form-control" type="text" placeholder="instagram name" name="instagram_url">
-        <div class="form-group">
-        <label for="exampleFormControlSelect1">Example select</label>
-        <select class="form-control" id="NumInstagramParse", name="num_images">
-            {% for n in range(1,61) %}
-                <option>{{ n }}</option>
-            {% endfor %}
-        </select>
-        </div>
-        </br>
-        <button name="btn" type="submit" class="btn btn-primary" value="submit">
-            parse
-        </button>
-    </form>
+    <input class="form-control" type="text" placeholder="instagram name" name="instagram_url">
+    <div class="form-group">
+    <label for="exampleFormControlSelect1">Количество фото</label>
+    <select class="form-control" id="NumInstagramParse", name="num_images">
+        {% for n in range(1,61) %}
+            <option>{{ n }}</option>
+        {% endfor %}
+    </select>
+    </div>
+    </br>
+    <button name="btn" type="submit" class="btn btn-primary" value="submit">
+        Запустить парсинг
+    </button>
+</form>
 </body>
 <script
 src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

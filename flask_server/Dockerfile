@@ -1,10 +1,11 @@
-FROM ubuntu:xenial
+FROM ubuntu:focal
 ARG PYTHON_VERSION=3.8
-WORKDIR /code
+WORKDIR /home/app
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 RUN apt update -y
 RUN apt install -y curl
+RUN apt install -y gcc g++ --fix-missing
 
 RUN curl -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
      chmod +x ~/miniconda.sh && \
@@ -18,5 +19,10 @@ ENV PATH /opt/conda/bin:$PATH
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 EXPOSE 5000
-COPY . .
+COPY app.py /home/app/app.py
+COPY ml_engine /home/app/ml_engine
+COPY templates /home/app/templates
+COPY helpers /home/app/helpers
+COPY config.py /home/app/config.py
+COPY views /home/app/views
 CMD ["flask", "run"]

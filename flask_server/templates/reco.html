@@ -8,34 +8,48 @@ crossorigin="anonymous"
 />
 
 <body>
-    <header>{% include 'navbar.html' %}</header>
-    <br/>
-    <table id="container">
-        {% for image in b64_images %}
-        <tr>
-            <td>
-                <figure class="figure border border-dark rounded pxy-md-5">
-                    <img src="data:image;base64,{{ image }}" class="figure-img img-fluid rounded"
-                    alt="A generic square placeholder image with rounded corners in a figure.">
-                </figure>
-            </td>
-        </tr>
+  <header>{% include 'navbar.html' %}</header>
+  <br/>
+  <table id="container">
+    {% for rest_name in reco_dict %}
+    <tr>
+      <div class="card border-primary mb-3" style="max-width: 18rem;">
+          <div class="card-header">{{ rest_name }}</div>
+          <img class="card-img-top" src="{{ reco_dict[rest_name]['rest_url'] }}" alt="Card image cap">
+          <div class="card-body">
+            <p class="card-text"> score: {{ reco_dict[rest_name]['score'] }}.</p>
+          </div>
+        </div>
+      <div class="d-flex align-content-around flex-wrap">
+      <div class="card-group">
+        {% for dish_meta in reco_dict[rest_name]['dishes'] %}
+        <div class="card">
+          <img class="card-img-top" src="{{ dish_meta['url'] }}" alt="Card image cap">
+          <div class="card-body">
+            <h5 class="card-title">{{ dish_meta['name'] }}</h5>
+            <p class="card-text">score: {{ dish_meta['score'] }}</p>
+          </div>
+        </div>
         {% endfor %}
+        </div>
+        </div>
+      </tr>
+      {% endfor %}
     </table>
-</body>
-<script
-src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-crossorigin="anonymous"
-></script>
-<script
-src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-crossorigin="anonymous"
-></script>
-<script
-src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-crossorigin="anonymous"
-></script>
-</html>
+  </body>
+  <script
+  src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+  integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+  crossorigin="anonymous"
+  ></script>
+  <script
+  src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+  integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+  crossorigin="anonymous"
+  ></script>
+  <script
+  src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+  integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+  crossorigin="anonymous"
+  ></script>
+  </html>
