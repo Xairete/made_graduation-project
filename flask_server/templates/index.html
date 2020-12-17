@@ -9,7 +9,7 @@ crossorigin="anonymous"
 <style>
         .scroll-box {
             overflow-y: scroll;
-            height: 300px;
+            height: 250px;
             padding: 1rem
         }
 </style>
@@ -33,12 +33,12 @@ crossorigin="anonymous"
 
     <br/>
     <div class="d-flex align-content-around flex-wrap">
-        <div class="row">
+        <div class="row align-items-start">
             {% for key, data in im_dict.items() %}
             <div class="col-sm-3">
                 <div class="card">
-                    <img class="card-img-top" src="data:image;base64,{{ data[0] }}" alt="Card image cap">
                     <div class="card-body">
+                    <img class="card-img-top" src="data:image;base64,{{ data[0] }}" alt="Card image cap">
                         <form action="/remove" method="get">
                             <button name="remove_image" class="btn btn-primary" value={{ key }}>>удалить</button>
                         </form>

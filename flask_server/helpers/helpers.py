@@ -3,6 +3,7 @@ from io import BytesIO
 from redis_collections import Dict
 from redis import StrictRedis
 from PIL import Image
+import redis
 import os
 
 
@@ -36,15 +37,21 @@ class PostStorage(object):
         redis = StrictRedis(host=host)
         self.images_meta = Dict(
             key='4ee69ce4970b4580bc80acac2572f16e', redis=redis)
-        self.id = 0
+        if redis.exists("id"):
+            self.id = int(redis.get("id"))
+        else:
+            self.id = 0
         self.key = key
+        self.redis = redis
 
     def add(self, val: ImageMeta):
         self.images_meta[self.id] = val
         self.id += 1
+        self.redis.set("id", self.id)
 
     def remove(self, id):
         self.images_meta.pop(id)
 
     def clean(self):
         self.images_meta.clear()
+        self.redis.set("id", 0)
