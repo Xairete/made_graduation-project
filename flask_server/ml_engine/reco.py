@@ -25,7 +25,7 @@ class RestMeta:
     rest_name: str
 
 
-def calc_restaraunt_score(rest_emb, insta_embed, mean_window=15, num_dish=3) -> Tuple[np.float, List[DishMeta]]:
+def calc_restaraunt_score(rest_emb, insta_embed, mean_window=5, num_dish=1) -> Tuple[np.float, List[DishMeta]]:
     if len(rest_emb) == 0:
         return float('inf'), []
 

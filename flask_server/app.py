@@ -50,9 +50,13 @@ class PreprocessImages(View):
                 POST_STORAGE.clean()
                 return redirect(url_for('index'))
             crop_images_meta = CONTEXT.food_selector.predict(food_images_meta)
+            images = [Image.open(BytesIO(im.im_bytes)) for im in crop_images_meta]
+            is_food_labels = CONTEXT.food_detector.predict(images)
+            food_images_meta = select_food(crop_images_meta, is_food_labels)
             POST_STORAGE.clean()
-            for im_meta in crop_images_meta:
+            for im_meta in food_images_meta:
                 POST_STORAGE.add(im_meta)
+
         return redirect(url_for('index'))
 
 

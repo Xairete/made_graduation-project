@@ -1,3 +1,4 @@
+import heapq
 import os
 import random
 import sys
@@ -64,7 +65,8 @@ class RecoView(View):
         for res_data in reco_rests:
             rest_dishes = []
             # TODO: сделать по нормальному
-            for dish_meta in res_data.rec_dishes[:5]:
+            best_dishes = sorted(res_data.rec_dishes, key=lambda x: x.score)
+            for dish_meta in best_dishes[:5]:
                 rest_dishes.append(
                     {"url": dish_meta.dish_url, "name": dish_meta.dish_name, "score": dish_meta.score})
             rest_url = restraunt_url.get(res_data.rest_name, "")
