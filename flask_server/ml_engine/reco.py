@@ -25,7 +25,7 @@ class RestMeta:
     rest_name: str
 
 
-def calc_restaraunt_score(rest_emb, insta_embed, mean_window=5, num_dish=5) -> Tuple[np.float, List[DishMeta]]:
+def calc_restaraunt_score(rest_emb, insta_embed, mean_window=5, num_dish=2) -> Tuple[np.float, List[DishMeta]]:
     if len(rest_emb) == 0:
         return float('inf'), []
 
@@ -60,6 +60,10 @@ def get_recommend(df, insta_embeddings) -> List[RestMeta]:
     rest_groups = df.groupby('restaurant_name')
     final_result = []
     for name, rest_group in rest_groups:
+        # Убираем плохие рестораны
+        if name in ['Хинкали vs Хачапури', 'Шерлок', 'Виноградник', 'Дорогомилово Сервис']:
+            continue
+        
         emb = rest_group['embed']
         mean_dist, matches = calc_restaraunt_score(emb, insta_embeddings)
 

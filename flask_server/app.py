@@ -94,4 +94,6 @@ app.add_url_rule(
     '/preprocess', view_func=PreprocessImages.as_view('preprocess'))
 app.add_url_rule(
     '/clean', view_func=Clean.as_view('clean'))
-app.run(threaded=False)
+
+if __name__ == "__main__":
+    app.run(threaded=False)

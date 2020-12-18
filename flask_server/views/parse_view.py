@@ -11,6 +11,7 @@ from flask import redirect, render_template, request, url_for
 from igramscraper.instagram import Instagram
 from igramscraper.exception import (InstagramAuthException,
                                     InstagramNotFoundException)
+import pickle
 
 sys.path.append("..")
 MIN_SCORE = 4.5

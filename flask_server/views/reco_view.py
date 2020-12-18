@@ -59,7 +59,15 @@ class RecoView(View):
             img_pic = Image.open(BytesIO(meta.im_bytes))
             image_list.append(img_pic)
         image_embeddings = CONTEXT.food_clf.predict(image_list)
-        reco_rests = get_recommend(RECO_DF, image_embeddings)
+        
+        # Убираем плохие блюда
+        filtered_df = RECO_DF[~RECO_DF['category_name'].str.lower().str.contains("соус")]
+        filtered_df = filtered_df[~filtered_df['category_name'].str.lower().str.contains("напит")]
+        filtered_df = filtered_df[~filtered_df['category_name'].str.lower().str.contains("детск")]
+        filtered_df = filtered_df[~filtered_df['dish_name'].str.lower().str.contains("напит")]
+        filtered_df = filtered_df[filtered_df['dish_name'] != 'Ям вун сен му']
+        
+        reco_rests = get_recommend(filtered_df, image_embeddings)
         reco_dict = {}
         restraunt_url = REST_URL_DF.to_dict()['logo_url']
         for res_data in reco_rests:
