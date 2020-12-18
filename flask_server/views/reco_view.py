@@ -16,6 +16,18 @@ MIN_SCORE = 4.5
 template_dir = os.path.abspath('../temlates')
 
 
+def remove_repeat(dish_list):
+    name_to_dish = {}
+    for dish in dish_list:
+        name = dish.dish_name
+        if name not in name_to_dish:
+            name_to_dish[name] = dish
+        elif name_to_dish[name].score > dish.score:
+            name_to_dish[name] = dish
+
+    return list(name_to_dish.values())
+
+
 class RecoView(View):
     methods = ['GET']
 
@@ -75,7 +87,9 @@ class RecoView(View):
         for res_data in reco_rests:
             rest_dishes = []
             # TODO: сделать по нормальному
-            best_dishes = sorted(res_data.rec_dishes, key=lambda x: x.score)
+            without_repeat = remove_repeat(res_data.rec_dishes)
+            best_dishes = sorted(without_repeat, key=lambda x: x.score)
+            
             for dish_meta in best_dishes[:5]:
                 rest_dishes.append(
                     {"url": dish_meta.dish_url, "name": dish_meta.dish_name, "score": dish_meta.score})
