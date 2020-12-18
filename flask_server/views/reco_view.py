@@ -66,6 +66,8 @@ class RecoView(View):
         filtered_df = filtered_df[~filtered_df['category_name'].str.lower().str.contains("детск")]
         filtered_df = filtered_df[~filtered_df['dish_name'].str.lower().str.contains("напит")]
         filtered_df = filtered_df[filtered_df['dish_name'] != 'Ям вун сен му']
+        filtered_df = filtered_df[~filtered_df['dish_name'].str.contains("Соус")]
+        filtered_df = filtered_df[~filtered_df['dish_name'].str.contains("СОУС")]
         
         reco_rests = get_recommend(filtered_df, image_embeddings)
         reco_dict = {}
